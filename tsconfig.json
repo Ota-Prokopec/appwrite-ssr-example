@@ -1,0 +1,36 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./.svelte-kit/tsconfig.json",
+	"display": "Default",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+
+		"strict": true,
+
+		"allowSyntheticDefaultImports": true,
+		"isolatedModules": true,
+
+		"useUnknownInCatchVariables": true,
+		"preserveValueImports": false,
+		"noImplicitAny": true,
+		"noEmitOnError": false,
+		"noImplicitReturns": true,
+		"importHelpers": true,
+		"allowUnusedLabels": true,
+		"importsNotUsedAsValues": "remove",
+
+		"noUnusedLocals": false,
+		"noUnusedParameters": false
+	},
+	"include": [
+		"src/**/*.d.ts",
+		"src/**/*.ts",
+		"src/**/*.js",
+		"src/**/*.svelte",
+		"../../global.d.ts",
+		".svelte-kit/ambient.d.ts"
+		//"static/firebase-messaging-sw.js"
+	],
+	"exclude": ["node_modules", "dist"]
+}
