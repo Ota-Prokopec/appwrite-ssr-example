@@ -28,10 +28,9 @@ type GrassDocumentCreate = {
 // key2 is optional but there is always a default value
 
 export const appwrite = appwriteSSR.setProject({
-	projectId: process.env.APPWRITE_PROJECT_ID,
+	projectId: "localhost",
 	hostname: 'localhost',
-	endpoint: process.env.APPWRITE_ENDPOINT,
-	apiKey: process.env.APPWRITE_API_KEY
+	endpoint: "localhost",
 });
 
 export const setCookie = (cookies: Types.Cookie[]) => {

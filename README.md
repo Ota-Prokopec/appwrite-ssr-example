@@ -2,9 +2,13 @@
 
 <p id="description">appwrite-ssr will help you to create ssr applications with appwrite.</p>
 
-<h2>🛠️ Installation Steps:</h2>
+<p>you can find example code on github:
+https://github.com/Ota-Prokopec/appwrite-ssr-example
+</p>
+<p>Appwrite is an open-source backend as a service server that abstract and simplify complex and repetitive development tasks behind a very simple to use REST API. Appwrite aims to help you develop your apps faster and in a more secure way. Use the Web SDK to integrate your app with the Appwrite server to easily start interacting with all of Appwrite backend APIs and tools. For full API documentation and tutorials go to https://appwrite.io/docs
+</p>
 
-<p>download appwrite-ssr</p>
+<h1>🛠️ Installation Steps:</h1>
 
 ```
 npm i appwrite-ssr
@@ -12,29 +16,33 @@ npm i appwrite-ssr
 yarn add appwrite-ssr
 ```
 
-<p>you can find example code on github:
-https://github.com/Ota-Prokopec/appwrite-ssr-example
-</p>
-
-<p>import appwrite-ssr</p>
+<h1>import appwrite-ssr</h1>
 
 ```ts
 import appwrite from 'appwrite-ssr'
 ```
 
-<p>set up project id, project endpoint and hostname (you can also set apiKey if you want to use admin actions - it is optional)
+<h1>set Appwrite project
+</h1>
+<p>set up appwrite project endpoint, project id and hostname of your server (you can also set apiKey if you want to use admin actions - it is optional)
 </p>
 
 ```ts
 import appwrite from 'appwrite-ssr'
 
-appwrite.setProject({ endPoint: 'https://cloud.appwrite.io/v1', projectId: 'fjalůj', hostname: 'localhost', apiKey: 'key...' })
+appwrite.setProject({
+	endPoint: 'https://cloud.appwrite.io/v1',
+	projectId: 'your-project-id',
+	hostname: 'your-server-hostname',
+	apiKey: 'your-api-key',
+})
 ```
 
-<p>how to begin? Set permissions by passing users session or use api key that you could act like admin</p>
+<h1>how to begin?</h1>
+<p>Connect user to your Appwrite by setting users session, or use setAdmin to act like admin</p>
 
 ```ts
-// authorizate by passing users session
+// passing users session
 const { Collection } = appwrite.setSession('users session here')
 //authorizate by passing users cookies
 const { Collection } = appwriteSSR.setCookie([{ name: '', value: '' }])
@@ -44,84 +52,66 @@ const { Collection } = appwriteSSR.none()
 const { Collection } = appwrite.setAdmin()
 ```
 
-<p>log user into your application using email (example with SvelteKit)</p>
+<h1>Auth</h1>
+<p>log user into your application using email</p>
 
 ```ts
-export const load: PageServerLoad = async (event) => {
-	const { account } = appwrite.none()
-	const { sessionLegacyToken, sessionToken } = await account.loginViaEmail('email', 'password')
-	event.cookies.set(sessionToken.name, sessionToken.value)
-}
+const { account } = appwrite.none()
+const { sessionLegacyToken, sessionToken } = await account.loginViaEmail('email', 'password')
+event.cookies.set(sessionToken.name, sessionToken.value)
 ```
 
-<p>log user into your application using oAuth2 (example with SvelteKit)
-
+<p>log user into your application using oAuth2</p>
+<p>
+on client side use:
 </p>
-<span>
-on client side use this:
-</span>
 
 ```ts
-await user.createOAuth2Session(platform, `${location.origin}/auth/oauth2/success`, `${location.origin}/oauth2/failure`)
+import { account } from 'appwrite' // https://www.npmjs.com/package/appwrite
+await account.createOAuth2Session(platform, `${location.origin}/auth/oauth2/success`, `${location.origin}/oauth2/failure`)
 ```
 
-<span>
-on server side use this:
-</span>
+<p>
+on server side use:
+</p>
 
 ```ts
 //the path for this function has to be /auth/oauth2/success (strictly)
-export const load: PageServerLoad = async (event) => {
-	const { account } = appwrite.none()
-	const { sessionLegacyToken, sessionToken } = await account.oauth2Login(event.url)
-	event.cookies.set(sessionToken.name, sessionToken.value)
-}
+import appwrite from 'appwrite-ssr'
+
+appwrite.setProject({
+	endPoint: 'https://cloud.appwrite.io/v1',
+	projectId: 'your-project-id',
+	hostname: 'your-server-hostname',
+	apiKey: 'your-api-key',
+})
+const { account } = appwrite.none()
+const url = 'whole URL'
+const { sessionLegacyToken, sessionToken } = await account.oauth2Login(url)
+event.cookies.set(sessionToken.name, sessionToken.value)
 ```
 
-<p>log user out or your application (example with SvelteKit)</p>
+<p>log user out or your application</p>
 
 ```ts
-//the path for this function has to be /auth/oauth2/success (strictly)
-export const load: PageServerLoad = async (event) => {
-	const { account } = appwrite.none()
-	const { sessionLegacyToken, sessionToken } = await account.logOut()
-	event.cookies.delete(sessionToken.name)
-}
+import appwrite from 'appwrite-ssr'
+
+appwrite.setProject({
+	endPoint: 'https://cloud.appwrite.io/v1',
+	projectId: 'your-project-id',
+	hostname: 'your-server-hostname',
+	apiKey: 'your-api-key',
+})
+const { account } = appwrite.none()
+const { sessionLegacyToken, sessionToken } = await account.logOut()
+event.cookies.delete(sessionToken.name)
 ```
 
-<p>create your own lib for all (here is my example with Sveltekit)
-
-</p>
+<h1>create your own instance</h1>
 
 ```ts
 import type { Types } from 'appwrite-ssr'
 import appwriteSSR, { Query } from 'appwrite-ssr'
-
-export type DocumentSkeleton = {
-	$id: string
-	$collectionId: string
-	$databaseId: string
-	$createdAt: string
-	$updatedAt: string
-	$permissions: string[]
-}
-
-export type Document<T extends Partial<DocumentSkeleton> & object> = {
-	[Key in keyof T]: T[Key] extends Record<string, unknown> ? Document<T[Key]> : T[Key]
-} & DocumentSkeleton
-
-type GrassDocumentGet = Document<{
-	grassName: string
-	grassOptionalDescription: string //optional value with default value
-	grassEnumValue: null | 'value' | 'value2'
-}>
-type GrassDocumentCreate = {
-	grassName: string
-	grassOptionalDescription?: string
-	grassEnumValue: null | 'value' | 'value2'
-}
-
-// key2 is optional but there is always a default value
 
 export const appwrite = appwriteSSR.setProject({
 	projectId: process.env.APPWRITE_PROJECT_ID,
@@ -129,45 +119,9 @@ export const appwrite = appwriteSSR.setProject({
 	endpoint: process.env.APPWRITE_ENDPOINT,
 	apiKey: process.env.APPWRITE_API_KEY,
 })
-
-export const setCookie = (cookies: Types.Cookie[]) => {
-	const app = appwrite.setCookie(cookies)
-	const collectionGrass = new app.Collection<GrassDocumentGet, GrassDocumentCreate>('test', 'grass')
-	const grassBucket = new app.Bucket('grassBucket')
-
-	return { collections: { collectionGrass }, ...app, buckets: { grassBucket } }
-}
-
-export const setAdmin = () => {
-	const app = appwrite.setAdmin()
-	const collectionGrass = new app.Collection<GrassDocumentGet, GrassDocumentCreate>('test', 'grass')
-	return { collections: { collectionGrass }, ...app }
-}
-
-export const grassQuery = Query<GrassDocumentGet>()
-
-export const queries = {
-	grassQuery,
-}
 ```
 
-<p>initialize collections</p>
-
-```ts
-  import type {
-	UserInfoDocument,
-	UserInfoDocumentCreate,
-  } from '@app/ts-types'
-
-    import appwrite from '@app/appwrite-ssr'
-
-	const { Collection } = appwrite.setSession(session)
-
-	const userInfo =new Collection<UserInfoDocument, UserInfoDocumentCreate>('account', 'userInfo'),
-	userInfo.createDocument({}, [userId])
-```
-
-<p>example code with Sveltekit (collections)</p>
+<h1>example code (collections)</h1>
 
 ```ts
 import type { PageServerLoad } from './$types'
@@ -197,60 +151,41 @@ type GrassDocumentCreate = {
 	grassOptionalDescription?: string
 	grassEnumValue: null | 'value' | 'value2'
 }
-
 // key2 is optional but there is always a default value
 
-const setCookie = (cookies: Types.Cookie[]) => {
-	const { Collection } = appwrite
-		.setProject({
-			endPoint: 'https://cloud.appwrite.io/v1',
-			projectId: 'fa',
-		})
-		.setCookie(cookies)
+const { Collection } = appwrite.setCookie(cookies)
 
-	const collectionGrass = new Collection<GrassDocumentGet, GrassDocumentCreate>('experiences', 'userInfo')
-	return { collectionGrass }
-}
+const collectionGrass = new Collection<GrassDocumentGet, GrassDocumentCreate>('your-database-id', 'your-collection-id')
 
 const grassQuery = Query<GrassDocumentGet>()
 
-export const load: PageServerLoad = async (event) => {
-	const cookies: Types.Cookie[] = event.cookies.getAll()
-	const collections = setCookie(cookies)
-	const result = await collections.collectionGrass.getDocument([grassQuery.equal('grassName', 'jj')])
-	return { result }
-}
+const query = grassQuery.equal('grassName', 'nameOfGrass')
+const res = await collectionGrass.getDocument([query])
 ```
 
-<p>example code with Sveltekit (buckets)</p>
+<h1>example code (buckets)</h1>
 
 ```ts
 import appwrite, { permissions, type Types } from 'appwrite-ssr'
-import type { PageServerLoad } from './$types'
 
-const setCookie = (cookies: Types.Cookie[]) => {
-	const { Bucket } = appwrite
-		.setProject({
-			endPoint: 'https://cloud.appwrite.io/v1',
-			projectId: 'fads',
-		})
-		.setCookie(cookies)
+const { Bucket } = appwrite
+	.setProject({
+		endPoint: 'https://cloud.appwrite.io/v1',
+		projectId: 'fads',
+	})
+	.setCookie(cookies)
 
-	const bucketGrass = new Bucket('myBucketId')
+const bucketGrass = new Bucket('myBucketId')
 
-	return { bucketGrass }
-}
+return { bucketGrass }
 
-export const load: PageServerLoad = async (event) => {
-	const buckets = setCookie(event.cookies.getAll())
-	const base64 = ''
-	const res = buckets.bucketGrass.createFile(base64, permissions.owner('myUserId'))
-	return res
-}
+const buckets = setCookie(event.cookies.getAll())
+const base64 = ''
+const res = bucketGrass.createFile(base64, permissions.owner('myUserId'))
 ```
 
 <h2>used packages/technologies:</h2>
-appwrite
+Appwrite
 
 <h2>🛡️ License:</h2>
 
